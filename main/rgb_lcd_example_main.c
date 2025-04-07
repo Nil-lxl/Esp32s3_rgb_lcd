@@ -21,7 +21,6 @@
 
 #include "lvgl.h"
 #include "lcd_defines.h"
-#include "esp_lcd_st7701.h"
 #include "esp_io_expander.h"
 #include "esp_lcd_panel_io_additions.h"
 
@@ -106,7 +105,11 @@ void app_main(void)
         .sda_gpio_num=PIN_NUM_SDA,
         .io_expander=NULL,
     };
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
     esp_lcd_panel_io_3wire_spi_config_t io_config=ST7701_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
+#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+    esp_lcd_panel_io_3wire_spi_config_t io_config=NV3052_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
+#endif
     esp_lcd_panel_io_handle_t io_handle=NULL;
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_3wire_spi(&io_config,&io_handle));
 
@@ -169,8 +172,12 @@ void app_main(void)
         },
         .flags.fb_in_psram = true, // allocate frame buffer in PSRAM
     };
-
+    
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
     st7701_vendor_config_t vendor_config={
+#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+    nv3052_vendor_config_t vendor_config={
+#endif
         .rgb_config=&panel_config,
         .flags={
             .mirror_by_cmd=1,
@@ -185,8 +192,11 @@ void app_main(void)
         .vendor_config=&vendor_config,
     };
 
-    ESP_ERROR_CHECK(esp_lcd_new_panel_st7701(io_handle,&panel_dev_config,&panel_handle));
-    // ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&panel_config, &panel_handle));
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
+    ESP_ERROR_CHECK(esp_lcd_new_panel_st7701_rgb(io_handle,&panel_dev_config,&panel_handle));
+#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+    ESP_ERROR_CHECK(esp_lcd_new_panel_nv3052_rgb(io_handle,&panel_dev_config,&panel_handle));
+#endif
 
     ESP_LOGI(TAG, "Initialize RGB LCD panel");
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));

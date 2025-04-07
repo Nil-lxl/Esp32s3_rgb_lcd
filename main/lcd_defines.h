@@ -5,6 +5,12 @@
 extern "C"{
 #endif
 
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
+#include "esp_lcd_st7701.h"
+#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+#include "esp_lcd_nv3052c.h"
+#endif
+
 static const char *TAG = "example";
 
 #define PIN_NUM_SDA     17
@@ -17,6 +23,7 @@ static const char *TAG = "example";
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Refresh Rate = 18000000/(1+40+20+800)/(1+10+5+480) = 42Hz
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (10 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              480
 #define EXAMPLE_LCD_V_RES              854
@@ -26,6 +33,17 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_VSYNC              20
 #define EXAMPLE_LCD_VBP                20
 #define EXAMPLE_LCD_VFP                41
+#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (15 * 1000 * 1000)
+#define EXAMPLE_LCD_H_RES              720
+#define EXAMPLE_LCD_V_RES              720
+#define EXAMPLE_LCD_HSYNC              2
+#define EXAMPLE_LCD_HBP                44
+#define EXAMPLE_LCD_HFP                46
+#define EXAMPLE_LCD_VSYNC              5
+#define EXAMPLE_LCD_VBP                15
+#define EXAMPLE_LCD_VFP                16
+#endif
 
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
 #define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL

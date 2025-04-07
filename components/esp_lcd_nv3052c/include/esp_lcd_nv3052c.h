@@ -23,6 +23,17 @@
 extern "C" {
 #endif
 
+#define NV3052_CMD_SDIR             (0xC7)
+#define NV3052_CMD_SS_BIT           (1 << 2)
+
+#define NV3052_CMD_CND2BKxSEL       (0xFF)
+#define NV3052_CMD_BKxSEL_BYTE0     (0x77)
+#define NV3052_CMD_BKxSEL_BYTE1     (0x01)
+#define NV3052_CMD_BKxSEL_BYTE2     (0x00)
+#define NV3052_CMD_BKxSEL_BYTE3     (0x00)
+#define NV3052_CMD_CN2_BIT          (1 << 4)
+#define NV3052_CMD_BKxSEL_BK0       (0x00)
+
 /**
  * @brief LCD panel initialization commands.
  *
@@ -32,7 +43,7 @@ typedef struct {
     const void *data;       /*<! Buffer that holds the command specific data */
     size_t data_bytes;      /*<! Size of `data` in memory, in bytes */
     unsigned int delay_ms;  /*<! Delay in milliseconds after this command */
-} st7701_lcd_init_cmd_t;
+} nv3052_lcd_init_cmd_t;
 
 /**
  * @brief LCD panel vendor configuration.
@@ -41,7 +52,7 @@ typedef struct {
  *
  */
 typedef struct {
-    const st7701_lcd_init_cmd_t *init_cmds;         /*!< Pointer to initialization commands array. Set to NULL if using default commands.
+    const nv3052_lcd_init_cmd_t *init_cmds;         /*!< Pointer to initialization commands array. Set to NULL if using default commands.
                                                      *   The array should be declared as `static const` and positioned outside the function.
                                                      *   Please refer to `vendor_specific_init_default` in source file.
                                                      */
@@ -73,13 +84,13 @@ typedef struct {
              *   This flag is only valid for the RGB interface.
              */
     } flags;
-} st7701_vendor_config_t;
+} nv3052_vendor_config_t;
 
 /**
- * @brief Create LCD panel for model ST7701
+ * @brief Create LCD panel for model nv3052
  *
- * @note  When `enable_io_multiplex` is set to 1, this function will first initialize the ST7701 with vendor specific initialization and then calls `esp_lcd_new_rgb_panel()` to create an RGB LCD panel. And the `esp_lcd_panel_init()` function will only initialize RGB.
- * @note  When `enable_io_multiplex` is set to 0, this function will only call `esp_lcd_new_rgb_panel()` to create an RGB LCD panel. And the `esp_lcd_panel_init()` function will initialize both the ST7701 and RGB.
+ * @note  When `enable_io_multiplex` is set to 1, this function will first initialize the nv3052 with vendor specific initialization and then calls `esp_lcd_new_rgb_panel()` to create an RGB LCD panel. And the `esp_lcd_panel_init()` function will only initialize RGB.
+ * @note  When `enable_io_multiplex` is set to 0, this function will only call `esp_lcd_new_rgb_panel()` to create an RGB LCD panel. And the `esp_lcd_panel_init()` function will initialize both the nv3052 and RGB.
  * @note  Vendor specific initialization can be different between manufacturers, should consult the LCD supplier for initialization sequence code.
  *
  * @param[in]  io LCD panel IO handle
@@ -90,8 +101,8 @@ typedef struct {
  *      - ESP_OK                on success
  *      - Otherwise             on fail
  */
-esp_err_t esp_lcd_new_panel_st7701(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, esp_lcd_panel_handle_t *ret_panel);
-esp_err_t esp_lcd_new_panel_st7701_rgb(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config,esp_lcd_panel_handle_t *ret_panel);
+esp_err_t esp_lcd_new_panel_nv3052(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, esp_lcd_panel_handle_t *ret_panel);
+esp_err_t esp_lcd_new_panel_nv3052_rgb(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config,esp_lcd_panel_handle_t *ret_panel);
 /**
  * @brief 3-wire SPI panel IO configuration structure
  *
@@ -99,7 +110,7 @@ esp_err_t esp_lcd_new_panel_st7701_rgb(const esp_lcd_panel_io_handle_t io, const
  * @param[in] scl_active_edge SCL signal active edge, 0: rising edge, 1: falling edge
  *
  */
-#define ST7701_PANEL_IO_3WIRE_SPI_CONFIG(line_cfg, scl_active_edge) \
+#define NV3052_PANEL_IO_3WIRE_SPI_CONFIG(line_cfg, scl_active_edge) \
     {                                                               \
         .line_config = line_cfg,                                    \
         .expect_clk_speed = PANEL_IO_3WIRE_SPI_CLK_MAX,             \
@@ -126,7 +137,7 @@ esp_err_t esp_lcd_new_panel_st7701_rgb(const esp_lcd_panel_io_handle_t io, const
  *                                              / bits_per_pixel
  *
  */
-#define ST7701_480_480_PANEL_60HZ_RGB_TIMING()      \
+#define nv3052_480_480_PANEL_60HZ_RGB_TIMING()      \
     {                                               \
         .pclk_hz = 16 * 1000 * 1000,                \
         .h_res = 480,                               \
@@ -146,7 +157,7 @@ esp_err_t esp_lcd_new_panel_st7701_rgb(const esp_lcd_panel_io_handle_t io, const
 /**
  * @brief MIPI-DSI bus configuration structure
  */
-#define ST7701_PANEL_BUS_DSI_2CH_CONFIG()                \
+#define nv3052_PANEL_BUS_DSI_2CH_CONFIG()                \
     {                                                    \
         .bus_id = 0,                                     \
         .num_data_lanes = 2,                             \
@@ -158,7 +169,7 @@ esp_err_t esp_lcd_new_panel_st7701_rgb(const esp_lcd_panel_io_handle_t io, const
  * @brief MIPI-DBI panel IO configuration structure
  *
  */
-#define ST7701_PANEL_IO_DBI_CONFIG()  \
+#define nv3052_PANEL_IO_DBI_CONFIG()  \
     {                                 \
         .virtual_channel = 0,         \
         .lcd_cmd_bits = 8,            \
@@ -174,7 +185,7 @@ esp_err_t esp_lcd_new_panel_st7701_rgb(const esp_lcd_panel_io_handle_t io, const
  * @param[in] px_format Pixel format of the panel
  *
  */
-#define ST7701_480_360_PANEL_60HZ_DPI_CONFIG(px_format)  \
+#define nv3052_480_360_PANEL_60HZ_DPI_CONFIG(px_format)  \
     {                                                    \
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     \
         .dpi_clock_freq_mhz = 15,                        \
