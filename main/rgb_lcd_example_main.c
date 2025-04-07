@@ -18,11 +18,12 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
+
 #include "lvgl.h"
 #include "lcd_defines.h"
-
-#define PIN_NUM_DC 10
-#define PIN_NUM_CS 12
+#include "esp_lcd_st7701.h"
+#include "esp_io_expander.h"
+#include "esp_lcd_panel_io_additions.h"
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
@@ -95,6 +96,20 @@ void app_main(void)
     example_bsp_init_lcd_backlight();
     example_bsp_set_lcd_backlight(EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL);
 
+    ESP_LOGI(TAG,"Initialize 3-Wire SPI Panel IO");
+    spi_line_config_t line_config={
+        .cs_io_type=IO_TYPE_GPIO,
+        .cs_gpio_num=PIN_NUM_CS,
+        .scl_io_type=IO_TYPE_GPIO,
+        .scl_gpio_num=PIN_NUM_SCL,
+        .sda_io_type=IO_TYPE_GPIO,
+        .sda_gpio_num=PIN_NUM_SDA,
+        .io_expander=NULL,
+    };
+    esp_lcd_panel_io_3wire_spi_config_t io_config=ST7701_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
+    esp_lcd_panel_io_handle_t io_handle=NULL;
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_3wire_spi(&io_config,&io_handle));
+
     ESP_LOGI(TAG, "Install RGB LCD panel driver");
     esp_lcd_panel_handle_t panel_handle = NULL;
     esp_lcd_rgb_panel_config_t panel_config = {
@@ -154,11 +169,29 @@ void app_main(void)
         },
         .flags.fb_in_psram = true, // allocate frame buffer in PSRAM
     };
-    ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&panel_config, &panel_handle));
+
+    st7701_vendor_config_t vendor_config={
+        .rgb_config=&panel_config,
+        .flags={
+            .mirror_by_cmd=1,
+            .enable_io_multiplex=0,
+        }
+    };
+    
+    esp_lcd_panel_dev_config_t panel_dev_config={
+        .reset_gpio_num=PIN_NUM_RST,
+        .rgb_ele_order=LCD_RGB_ELEMENT_ORDER_RGB,
+        .bits_per_pixel=16,
+        .vendor_config=&vendor_config,
+    };
+
+    ESP_ERROR_CHECK(esp_lcd_new_panel_st7701(io_handle,&panel_dev_config,&panel_handle));
+    // ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&panel_config, &panel_handle));
 
     ESP_LOGI(TAG, "Initialize RGB LCD panel");
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
+    // ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
 
     ESP_LOGI(TAG, "Turn on LCD backlight");
     example_bsp_set_lcd_backlight(EXAMPLE_LCD_BK_LIGHT_ON_LEVEL);
@@ -182,7 +215,7 @@ void app_main(void)
 #else
     ESP_LOGI(TAG, "Allocate LVGL draw buffers");
     // it's recommended to allocate the draw buffer from internal memory, for better performance
-    size_t draw_buffer_sz = EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_DRAW_BUF_LINES * EXAMPLE_PIXEL_SIZE;
+    size_t draw_buffer_sz = EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES/10 * EXAMPLE_PIXEL_SIZE;
     buf1 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     assert(buf1);
     // set LVGL draw buffers and partial mode
