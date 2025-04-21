@@ -13,18 +13,13 @@ extern "C"{
 
 static const char *TAG = "example";
 
-#define PIN_NUM_SDA     17
-#define PIN_NUM_SCL     16
-#define PIN_NUM_CS      15
-#define PIN_NUM_RST     7
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Refresh Rate = 18000000/(1+40+20+800)/(1+10+5+480) = 42Hz
 #ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (10 * 1000 * 1000)
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              480
 #define EXAMPLE_LCD_V_RES              854
 #define EXAMPLE_LCD_HSYNC              10
@@ -50,29 +45,34 @@ static const char *TAG = "example";
 #define EXAMPLE_PIN_NUM_BK_LIGHT       -1
 #define EXAMPLE_PIN_NUM_DISP_EN        -1
 
+#define PIN_NUM_SDA     45
+#define PIN_NUM_SCL     32
+#define PIN_NUM_CS      27
+#define PIN_NUM_RST     23
+
 #define EXAMPLE_PIN_NUM_HSYNC          46
-#define EXAMPLE_PIN_NUM_VSYNC          4
-#define EXAMPLE_PIN_NUM_DE             5
-#define EXAMPLE_PIN_NUM_PCLK           9
+#define EXAMPLE_PIN_NUM_VSYNC          53
+#define EXAMPLE_PIN_NUM_DE             47
+#define EXAMPLE_PIN_NUM_PCLK           48
 
-#define EXAMPLE_PIN_NUM_DATA0          10   //B0
-#define EXAMPLE_PIN_NUM_DATA1          11   //B1
-#define EXAMPLE_PIN_NUM_DATA2          12   //B2
-#define EXAMPLE_PIN_NUM_DATA3          13   //B3    
-#define EXAMPLE_PIN_NUM_DATA4          14   //B4
+#define EXAMPLE_PIN_NUM_DATA0          7   //B0
+#define EXAMPLE_PIN_NUM_DATA1          8   //B1
+#define EXAMPLE_PIN_NUM_DATA2          21   //B2
+#define EXAMPLE_PIN_NUM_DATA3          22   //B3    
+#define EXAMPLE_PIN_NUM_DATA4          20   //B4
 
-#define EXAMPLE_PIN_NUM_DATA5          39   //G0
-#define EXAMPLE_PIN_NUM_DATA6          38   //G1
-#define EXAMPLE_PIN_NUM_DATA7          45   //G2
-#define EXAMPLE_PIN_NUM_DATA8          48   //G3
-#define EXAMPLE_PIN_NUM_DATA9          47   //G4
-#define EXAMPLE_PIN_NUM_DATA10         21   //G5
+#define EXAMPLE_PIN_NUM_DATA5          5   //G0
+#define EXAMPLE_PIN_NUM_DATA6          6   //G1
+#define EXAMPLE_PIN_NUM_DATA7          4   //G2
+#define EXAMPLE_PIN_NUM_DATA8          3   //G3
+#define EXAMPLE_PIN_NUM_DATA9          2   //G4
+#define EXAMPLE_PIN_NUM_DATA10         36   //G5
 
-#define EXAMPLE_PIN_NUM_DATA11         1    //R1
-#define EXAMPLE_PIN_NUM_DATA12         2    //R2
-#define EXAMPLE_PIN_NUM_DATA13         42   //R3
-#define EXAMPLE_PIN_NUM_DATA14         41   //R4
-#define EXAMPLE_PIN_NUM_DATA15         40   //R5
+#define EXAMPLE_PIN_NUM_DATA11         24    //R0
+#define EXAMPLE_PIN_NUM_DATA12         25    //R1
+#define EXAMPLE_PIN_NUM_DATA13         33   //R2
+#define EXAMPLE_PIN_NUM_DATA14         26   //R3
+#define EXAMPLE_PIN_NUM_DATA15         54   //R4
 
 #if CONFIG_EXAMPLE_LCD_DATA_LINES > 16
 #define EXAMPLE_PIN_NUM_DATA16         1   
