@@ -70,5 +70,5 @@ direct_dependencies:
 - espressif/esp_lcd_st7701
 - lvgl/lvgl
 manifest_hash: 84c1e84ce6b26997db88e2929a5fb5c54f93ded6fb2f3e5efeb7ad87f13204dc
-target: esp32p4
+target: esp32s3
 version: 2.0.0

@@ -45,34 +45,34 @@ static const char *TAG = "example";
 #define EXAMPLE_PIN_NUM_BK_LIGHT       -1
 #define EXAMPLE_PIN_NUM_DISP_EN        -1
 
-#define PIN_NUM_SDA     45
-#define PIN_NUM_SCL     32
-#define PIN_NUM_CS      27
-#define PIN_NUM_RST     23
+#define PIN_NUM_SDA     11
+#define PIN_NUM_SCL     12
+#define PIN_NUM_CS      10
+#define PIN_NUM_RST     9
 
-#define EXAMPLE_PIN_NUM_HSYNC          46
-#define EXAMPLE_PIN_NUM_VSYNC          53
+#define EXAMPLE_PIN_NUM_HSYNC          45
+#define EXAMPLE_PIN_NUM_VSYNC          48
 #define EXAMPLE_PIN_NUM_DE             47
-#define EXAMPLE_PIN_NUM_PCLK           48
+#define EXAMPLE_PIN_NUM_PCLK           46
 
-#define EXAMPLE_PIN_NUM_DATA0          7   //B0
-#define EXAMPLE_PIN_NUM_DATA1          8   //B1
-#define EXAMPLE_PIN_NUM_DATA2          21   //B2
-#define EXAMPLE_PIN_NUM_DATA3          22   //B3    
-#define EXAMPLE_PIN_NUM_DATA4          20   //B4
+#define EXAMPLE_PIN_NUM_DATA0          5   //B0
+#define EXAMPLE_PIN_NUM_DATA1          4   //B1
+#define EXAMPLE_PIN_NUM_DATA2          3   //B2
+#define EXAMPLE_PIN_NUM_DATA3          2   //B3    
+#define EXAMPLE_PIN_NUM_DATA4          1   //B4
 
-#define EXAMPLE_PIN_NUM_DATA5          5   //G0
-#define EXAMPLE_PIN_NUM_DATA6          6   //G1
-#define EXAMPLE_PIN_NUM_DATA7          4   //G2
-#define EXAMPLE_PIN_NUM_DATA8          3   //G3
-#define EXAMPLE_PIN_NUM_DATA9          2   //G4
-#define EXAMPLE_PIN_NUM_DATA10         36   //G5
+#define EXAMPLE_PIN_NUM_DATA5          15   //G0
+#define EXAMPLE_PIN_NUM_DATA6          14  //G1
+#define EXAMPLE_PIN_NUM_DATA7          13   //G2
+#define EXAMPLE_PIN_NUM_DATA8          8   //G3
+#define EXAMPLE_PIN_NUM_DATA9          7   //G4
+#define EXAMPLE_PIN_NUM_DATA10         6   //G5
 
-#define EXAMPLE_PIN_NUM_DATA11         24    //R0
-#define EXAMPLE_PIN_NUM_DATA12         25    //R1
-#define EXAMPLE_PIN_NUM_DATA13         33   //R2
-#define EXAMPLE_PIN_NUM_DATA14         26   //R3
-#define EXAMPLE_PIN_NUM_DATA15         54   //R4
+#define EXAMPLE_PIN_NUM_DATA11         20   //R0
+#define EXAMPLE_PIN_NUM_DATA12         19   //R1
+#define EXAMPLE_PIN_NUM_DATA13         18   //R2
+#define EXAMPLE_PIN_NUM_DATA14         17   //R3
+#define EXAMPLE_PIN_NUM_DATA15         16   //R4
 
 #if CONFIG_EXAMPLE_LCD_DATA_LINES > 16
 #define EXAMPLE_PIN_NUM_DATA16         1   
