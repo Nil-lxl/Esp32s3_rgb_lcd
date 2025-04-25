@@ -162,6 +162,7 @@ err:
 
 static const st7701_lcd_init_cmd_t rgb_lcd_init_cmds[] = {
 //  {cmd, { data }, data_size, delay_ms}
+    {0x3A, (uint8_t []){0x77}, 1, 0},
     {0xFF, (uint8_t []){0x77, 0x01, 0x00, 0x00, 0x13}, 5, 0},
     {0xEF, (uint8_t []){0x08}, 1, 0},
     {0xFF, (uint8_t []){0x77, 0x01, 0x00, 0x00, 0x10}, 5, 0},
@@ -195,16 +196,12 @@ static const st7701_lcd_init_cmd_t rgb_lcd_init_cmds[] = {
     {0xEB, (uint8_t []){0x00, 0x01, 0xE4, 0xE4, 0x44, 0x88, 0x40}, 7, 0},
     {0xED, (uint8_t []){0xFF, 0x45, 0x67, 0xFA, 0x01, 0x2B, 0xCF, 0xFF, 0xFF, 0xFC, 0xB2, 0x10, 0xAF, 0x76, 0x54, 0xFF}, 16, 0},
     {0xEF, (uint8_t []){0x10, 0x0D, 0x04, 0x08, 0x3F, 0x1F}, 6, 0},
-    // {0xFF, (uint8_t []){0x77, 0x01, 0x00, 0x00, 0x00}, 5, 0},
     {0x11, (uint8_t []){0x00}, 0, 120},
 
     {0x35, (uint8_t []){0x00}, 1, 120},
 
     {0x29, (uint8_t []){0x00}, 0, 20},
 
-    // {0xFF, (uint8_t []){0x77, 0x01, 0x00, 0x00, 0x12}, 5, 0}, /* This part of the parameters can be used for screen self-test */
-    // {0xD1, (uint8_t []){0x81}, 1, 0},
-    // {0xD2, (uint8_t []){0x08}, 1, 0},
 };
 
 static esp_err_t panel_st7701_send_init_cmds(st7701_panel_t *st7701)
@@ -221,9 +218,6 @@ static esp_err_t panel_st7701_send_init_cmds(st7701_panel_t *st7701)
     // Set color format
     ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL, (uint8_t []) {
         st7701->madctl_val
-    }, 1), TAG, "Write cmd failed");
-    ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, LCD_CMD_COLMOD, (uint8_t []) {
-        st7701->colmod_val
     }, 1), TAG, "Write cmd failed");
 
     // vendor specific initialization, it can be different between manufacturers
@@ -345,10 +339,10 @@ static esp_err_t panel_st7701_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool
         }
         ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, ST7701_CMD_SDIR, (uint8_t[]) {
             sdir_val,
-        }, 1), TAG, "send command failed");;
+        }, 1), TAG, "send command failed");
         ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL, (uint8_t[]) {
             st7701->madctl_val,
-        }, 1), TAG, "send command failed");;
+        }, 1), TAG, "send command failed");
     } else {
         // Control mirror through RGB panel
         ESP_RETURN_ON_ERROR(st7701->mirror(panel, mirror_x, mirror_y), TAG, "RGB panel mirror failed");

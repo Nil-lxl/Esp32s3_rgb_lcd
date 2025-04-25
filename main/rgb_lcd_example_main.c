@@ -109,6 +109,8 @@ void app_main(void)
     esp_lcd_panel_io_3wire_spi_config_t io_config=ST7701_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
 #elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
     esp_lcd_panel_io_3wire_spi_config_t io_config=NV3052_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
+#elif CONFIG_EXAMPLE_LCD_H040A18
+    esp_lcd_panel_io_3wire_spi_config_t io_config=H040A18_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
 #endif
     esp_lcd_panel_io_handle_t io_handle=NULL;
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_3wire_spi(&io_config,&io_handle));
@@ -177,6 +179,8 @@ void app_main(void)
     st7701_vendor_config_t vendor_config={
 #elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
     nv3052_vendor_config_t vendor_config={
+#elif CONFIG_EXAMPLE_LCD_H040A18
+    h040a18_vendor_config_t vendor_config={
 #endif
         .rgb_config=&panel_config,
         .flags={
@@ -196,6 +200,8 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_lcd_new_panel_st7701_rgb(io_handle,&panel_dev_config,&panel_handle));
 #elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
     ESP_ERROR_CHECK(esp_lcd_new_panel_nv3052_rgb(io_handle,&panel_dev_config,&panel_handle));
+#elif CONFIG_EXAMPLE_LCD_H040A18
+    ESP_ERROR_CHECK(esp_lcd_new_panel_h040a18(io_handle,&panel_dev_config,&panel_handle));
 #endif
 
     ESP_LOGI(TAG, "Initialize RGB LCD panel");

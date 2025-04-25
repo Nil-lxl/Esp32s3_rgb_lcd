@@ -9,6 +9,8 @@ extern "C"{
 #include "esp_lcd_st7701.h"
 #elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
 #include "esp_lcd_nv3052c.h"
+#elif CONFIG_EXAMPLE_LCD_H040A18
+#include "lcd_h040a18.h"
 #endif
 
 static const char *TAG = "example";
@@ -22,12 +24,12 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              480
 #define EXAMPLE_LCD_V_RES              854
-#define EXAMPLE_LCD_HSYNC              10
-#define EXAMPLE_LCD_HBP                10
-#define EXAMPLE_LCD_HFP                43
-#define EXAMPLE_LCD_VSYNC              20
+#define EXAMPLE_LCD_HSYNC              80
+#define EXAMPLE_LCD_HBP                40
+#define EXAMPLE_LCD_HFP                40
+#define EXAMPLE_LCD_VSYNC              4
 #define EXAMPLE_LCD_VBP                20
-#define EXAMPLE_LCD_VFP                41
+#define EXAMPLE_LCD_VFP                20
 #elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (15 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              720
@@ -38,6 +40,16 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_VSYNC              5
 #define EXAMPLE_LCD_VBP                15
 #define EXAMPLE_LCD_VFP                16
+#elif CONFIG_EXAMPLE_LCD_H040A18
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
+#define EXAMPLE_LCD_H_RES              400
+#define EXAMPLE_LCD_V_RES              960
+#define EXAMPLE_LCD_HSYNC              8
+#define EXAMPLE_LCD_HBP                50
+#define EXAMPLE_LCD_HFP                50
+#define EXAMPLE_LCD_VSYNC              8
+#define EXAMPLE_LCD_VBP                20
+#define EXAMPLE_LCD_VFP                20
 #endif
 
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
@@ -55,24 +67,24 @@ static const char *TAG = "example";
 #define EXAMPLE_PIN_NUM_DE             47
 #define EXAMPLE_PIN_NUM_PCLK           46
 
-#define EXAMPLE_PIN_NUM_DATA0          5   //B0
-#define EXAMPLE_PIN_NUM_DATA1          4   //B1
+#define EXAMPLE_PIN_NUM_DATA0          1   //B0
+#define EXAMPLE_PIN_NUM_DATA1          2   //B1
 #define EXAMPLE_PIN_NUM_DATA2          3   //B2
-#define EXAMPLE_PIN_NUM_DATA3          2   //B3    
-#define EXAMPLE_PIN_NUM_DATA4          1   //B4
+#define EXAMPLE_PIN_NUM_DATA3          4   //B3    
+#define EXAMPLE_PIN_NUM_DATA4          5   //B4
 
-#define EXAMPLE_PIN_NUM_DATA5          15   //G0
-#define EXAMPLE_PIN_NUM_DATA6          14  //G1
-#define EXAMPLE_PIN_NUM_DATA7          13   //G2
-#define EXAMPLE_PIN_NUM_DATA8          8   //G3
-#define EXAMPLE_PIN_NUM_DATA9          7   //G4
-#define EXAMPLE_PIN_NUM_DATA10         6   //G5
+#define EXAMPLE_PIN_NUM_DATA5          6    //G0
+#define EXAMPLE_PIN_NUM_DATA6          7    //G1
+#define EXAMPLE_PIN_NUM_DATA7          8    //G2
+#define EXAMPLE_PIN_NUM_DATA8          13   //G3
+#define EXAMPLE_PIN_NUM_DATA9          14   //G4
+#define EXAMPLE_PIN_NUM_DATA10         15   //G5
 
-#define EXAMPLE_PIN_NUM_DATA11         20   //R0
-#define EXAMPLE_PIN_NUM_DATA12         19   //R1
+#define EXAMPLE_PIN_NUM_DATA11         16   //R0
+#define EXAMPLE_PIN_NUM_DATA12         17   //R1
 #define EXAMPLE_PIN_NUM_DATA13         18   //R2
-#define EXAMPLE_PIN_NUM_DATA14         17   //R3
-#define EXAMPLE_PIN_NUM_DATA15         16   //R4
+#define EXAMPLE_PIN_NUM_DATA14         19   //R3
+#define EXAMPLE_PIN_NUM_DATA15         20   //R4
 
 #if CONFIG_EXAMPLE_LCD_DATA_LINES > 16
 #define EXAMPLE_PIN_NUM_DATA16         1   

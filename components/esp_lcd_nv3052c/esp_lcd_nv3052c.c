@@ -70,34 +70,6 @@ esp_err_t esp_lcd_new_panel_nv3052_rgb(const esp_lcd_panel_io_handle_t io, const
         ESP_GOTO_ON_ERROR(gpio_config(&io_conf), err, TAG, "configure GPIO for RST line failed");
     }
 
-    switch (panel_dev_config->rgb_ele_order) {
-    case LCD_RGB_ELEMENT_ORDER_RGB:
-        nv3052->madctl_val = 0;
-        break;
-    case LCD_RGB_ELEMENT_ORDER_BGR:
-        nv3052->madctl_val |= LCD_CMD_BGR_BIT;
-        break;
-    default:
-        ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported color element order");
-        break;
-    }
-
-    nv3052->colmod_val = 0;
-    switch (panel_dev_config->bits_per_pixel) {
-    case 16: // RGB565
-        nv3052->colmod_val = 0x50;
-        break;
-    case 18: // RGB666
-        nv3052->colmod_val = 0x60;
-        break;
-    case 24: // RGB888
-        nv3052->colmod_val = 0x70;
-        break;
-    default:
-        ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported pixel width");
-        break;
-    }
-
     nv3052->io = io;
     nv3052->init_cmds = vendor_config->init_cmds;
     nv3052->init_cmds_size = vendor_config->init_cmds_size;
@@ -328,7 +300,7 @@ static const nv3052_lcd_init_cmd_t rgb_lcd_init_cmds[] = {
     {0xFF, (uint8_t []){0x52}, 1, 0},
     {0xFF, (uint8_t []){0x00}, 1, 0},
     {0x36, (uint8_t []){0x02}, 1, 0},//反扫09
-    {0x3A, (uint8_t []){0x55}, 1, 0},//16BIT
+    {0x3A, (uint8_t []){0x77}, 1, 0},//16BIT
     {0x11, (uint8_t []){0x00}, 1, 200},
     {0x29, (uint8_t []){0x00}, 1, 100},
 };
@@ -341,17 +313,6 @@ static esp_err_t panel_nv3052_send_init_cmds(nv3052_panel_t *nv3052)
     bool is_command2_disable = true;
     bool is_cmd_overwritten = false;
 
-    // ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, NV3052_CMD_CND2BKxSEL, (uint8_t []) {
-    //     NV3052_CMD_BKxSEL_BYTE0, NV3052_CMD_BKxSEL_BYTE1, NV3052_CMD_BKxSEL_BYTE2, NV3052_CMD_BKxSEL_BYTE3, 0x00
-    // }, 5), TAG, "Write cmd failed");
-    // Set color format
-    ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL, (uint8_t []) {
-        nv3052->madctl_val
-    }, 1), TAG, "Write cmd failed");
-    ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, LCD_CMD_COLMOD, (uint8_t []) {
-        nv3052->colmod_val
-    }, 1), TAG, "Write cmd failed");
-
     // vendor specific initialization, it can be different between manufacturers
     // should consult the LCD supplier for initialization sequence code
     if (nv3052->init_cmds) {
@@ -363,38 +324,11 @@ static esp_err_t panel_nv3052_send_init_cmds(nv3052_panel_t *nv3052)
     }
 
     for (int i = 0; i < init_cmds_size; i++) {
-        // Check if the command has been used or conflicts with the internal only when command2 is disable
-        if (is_command2_disable && (init_cmds[i].data_bytes > 0)) {
-            switch (init_cmds[i].cmd) {
-            case LCD_CMD_MADCTL:
-                is_cmd_overwritten = true;
-                nv3052->madctl_val = ((uint8_t *)init_cmds[i].data)[0];
-                break;
-            case LCD_CMD_COLMOD:
-                is_cmd_overwritten = true;
-                nv3052->colmod_val = ((uint8_t *)init_cmds[i].data)[0];
-                break;
-            default:
-                is_cmd_overwritten = false;
-                break;
-            }
-
-            if (is_cmd_overwritten) {
-                is_cmd_overwritten = false;
-                ESP_LOGW(TAG, "The %02Xh command has been used and will be overwritten by external initialization sequence",
-                         init_cmds[i].cmd);
-            }
-        }
-
         // Send command
         ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, init_cmds[i].cmd, init_cmds[i].data, init_cmds[i].data_bytes),
                             TAG, "send command failed");
         vTaskDelay(pdMS_TO_TICKS(init_cmds[i].delay_ms));
 
-        // Check if the current cmd is the command2 disable cmd
-        // if ((init_cmds[i].cmd == nv3052_CMD_CND2BKxSEL) && (init_cmds[i].data_bytes > 4)) {
-        //     is_command2_disable = !(((uint8_t *)init_cmds[i].data)[4] & nv3052_CMD_CN2_BIT);
-        // }
         ESP_LOGW(TAG,"send commands %d/%d",i,init_cmds_size);
     }
     ESP_LOGI(TAG, "send init commands success");

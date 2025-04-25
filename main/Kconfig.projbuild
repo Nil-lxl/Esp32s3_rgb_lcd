@@ -53,6 +53,7 @@ menu "Example Configuration"
             bool "nv3052c"
         config EXAMPLE_LCD_CONTROLLER_ST7701S
             bool "st7701s"
-
+        config EXAMPLE_LCD_H040A18
+            bool "H040A18"
     endchoice
 endmenu
