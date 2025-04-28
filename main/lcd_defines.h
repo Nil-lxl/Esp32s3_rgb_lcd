@@ -11,7 +11,10 @@ extern "C"{
 #include "esp_lcd_nv3052c.h"
 #elif CONFIG_EXAMPLE_LCD_H040A18
 #include "lcd_h040a18.h"
+#elif CONFIG_EXAMPLE_LCD_H035A17
+#include "lcd_h035a17.h"
 #endif
+#include "vernon_gt911.h"
 
 static const char *TAG = "example";
 
@@ -19,7 +22,15 @@ static const char *TAG = "example";
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Refresh Rate = 18000000/(1+40+20+800)/(1+10+5+480) = 42Hz
+#if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
+#define TOUCH_I2C_SDA   21
+#define TOUCH_I2C_SCL   40
+#define TOUCH_PIN_RTN   38
+#define TOUCH_PIN_INT   39
+
+#define TOUCH_PAD_WIDTH  640
+#define TOUCH_PAD_HEIGHT 480
+#endif
 #ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              480
@@ -50,6 +61,16 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_VSYNC              8
 #define EXAMPLE_LCD_VBP                20
 #define EXAMPLE_LCD_VFP                20
+#elif CONFIG_EXAMPLE_LCD_H035A17
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
+#define EXAMPLE_LCD_H_RES              640
+#define EXAMPLE_LCD_V_RES              480
+#define EXAMPLE_LCD_HSYNC              23
+#define EXAMPLE_LCD_HBP                20
+#define EXAMPLE_LCD_HFP                20
+#define EXAMPLE_LCD_VSYNC              2
+#define EXAMPLE_LCD_VBP                6
+#define EXAMPLE_LCD_VFP                12
 #endif
 
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
