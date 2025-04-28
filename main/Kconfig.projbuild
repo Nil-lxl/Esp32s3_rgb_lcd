@@ -55,5 +55,11 @@ menu "Example Configuration"
             bool "st7701s"
         config EXAMPLE_LCD_H040A18
             bool "H040A18"
+        config EXAMPLE_LCD_H035A17
+            bool "H035A17"    
     endchoice
+
+    config EXAMPLE_LCD_USE_TOUCH_ENABLED
+        bool "LCD USE TOUCH PANEL"
+        default n
 endmenu

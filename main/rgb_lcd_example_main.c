@@ -18,12 +18,55 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "soc/io_mux_reg.h"
 
 #include "lvgl.h"
 #include "lcd_defines.h"
 #include "esp_io_expander.h"
 #include "esp_lcd_panel_io_additions.h"
 
+// #include "driver/i2c_master.h"
+
+// i2c_master_bus_config_t i2c_config={
+//     .clk_source=I2C_CLK_SRC_DEFAULT,
+//     .i2c_port=I2C_NUM_0,
+//     .sda_io_num=GPIO_NUM_21,
+//     .scl_io_num=GPIO_NUM_40,
+//     .glitch_ignore_cnt=7,
+//     .flags.enable_internal_pullup=true,
+// };
+// i2c_master_bus_handle_t i2c_handle;
+
+// i2c_device_config_t i2c_dev_config={
+//     .dev_addr_length=I2C_ADDR_BIT_7,
+//     .device_address=0x5D,
+//     .scl_speed_hz=10000,
+// };
+// i2c_master_dev_handle_t i2c_dev_handle;
+
+// void i2c_init(void){
+//     uint8_t reg=0x8140;
+//     uint8_t buf[2];
+//     uint8_t buffer[2];
+//     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_config,&i2c_handle));
+//     ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_handle,&i2c_dev_config,&i2c_dev_handle));
+//     ESP_ERROR_CHECK(i2c_master_probe(i2c_handle,0x5D,-1));
+
+// }
+Vernon_GT911 vernonGT911;
+#if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
+static void example_lvgl_touch_cb(lv_indev_t* indev,lv_indev_data_t* data){
+    uint16_t x,y;
+    if(GT911_touched(&vernonGT911)){
+        GT911_read_pos(&vernonGT911,&x,&y,0);
+        data->point.x=x;
+        data->point.y=y;
+        data->state=LV_INDEV_STATE_PRESSED;
+    }else{
+        data->state=LV_INDEV_STATE_RELEASED;
+    }
+}
+#endif
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
@@ -89,8 +132,33 @@ static void example_bsp_set_lcd_backlight(uint32_t level)
 #endif
 }
 
+void GT911_test(void *param){
+    uint16_t x,y;
+    while (1){
+        if(GT911_touched(&vernonGT911)){
+            //
+            // for(int i=0;i<5;i++){
+                GT911_read_pos(&vernonGT911,&x,&y,0);
+                ESP_LOGW(TAG,"No: %d, touched x: %d, touched y: %d\n", 0,  x, y);
+            // }
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+
+}
+
 void app_main(void)
 {
+#if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
+    GT911_init(&vernonGT911, TOUCH_I2C_SDA,TOUCH_I2C_SCL,TOUCH_PIN_INT,
+               TOUCH_PIN_RTN, I2C_NUM_0,GT911_ADDR1,
+               TOUCH_PAD_WIDTH, TOUCH_PAD_HEIGHT);
+
+    GT911_setRotation(&vernonGT911,ROTATION_NORMAL);
+    ESP_LOGW(TAG,"GT911 TouchPad Init");
+#endif
+    xTaskCreate(GT911_test,"i2c",1024*4,NULL,3,NULL);
+
     ESP_LOGI(TAG, "Turn off LCD backlight");
     example_bsp_init_lcd_backlight();
     example_bsp_set_lcd_backlight(EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL);
@@ -111,6 +179,8 @@ void app_main(void)
     esp_lcd_panel_io_3wire_spi_config_t io_config=NV3052_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
 #elif CONFIG_EXAMPLE_LCD_H040A18
     esp_lcd_panel_io_3wire_spi_config_t io_config=H040A18_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
+#elif CONFIG_EXAMPLE_LCD_H035A17
+    esp_lcd_panel_io_3wire_spi_config_t io_config=H035A17_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
 #endif
     esp_lcd_panel_io_handle_t io_handle=NULL;
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_3wire_spi(&io_config,&io_handle));
@@ -181,6 +251,8 @@ void app_main(void)
     nv3052_vendor_config_t vendor_config={
 #elif CONFIG_EXAMPLE_LCD_H040A18
     h040a18_vendor_config_t vendor_config={
+#elif CONFIG_EXAMPLE_LCD_H035A17  
+    h035a17_vendor_config_t vendor_config={      
 #endif
         .rgb_config=&panel_config,
         .flags={
@@ -202,6 +274,8 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_lcd_new_panel_nv3052_rgb(io_handle,&panel_dev_config,&panel_handle));
 #elif CONFIG_EXAMPLE_LCD_H040A18
     ESP_ERROR_CHECK(esp_lcd_new_panel_h040a18(io_handle,&panel_dev_config,&panel_handle));
+#elif CONFIG_EXAMPLE_LCD_H035A17
+    ESP_ERROR_CHECK(esp_lcd_new_panel_h035a17(io_handle,&panel_dev_config,&panel_handle));
 #endif
 
     ESP_LOGI(TAG, "Initialize RGB LCD panel");
@@ -257,6 +331,13 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
+#if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
+    static lv_indev_t* touch_indev;
+    touch_indev=lv_indev_create();
+    lv_indev_set_type(touch_indev,LV_INDEV_TYPE_POINTER);
+    lv_indev_set_display(touch_indev,display);
+    lv_indev_set_read_cb(touch_indev,example_lvgl_touch_cb);
+#endif
     ESP_LOGI(TAG, "Create LVGL task");
     xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
 

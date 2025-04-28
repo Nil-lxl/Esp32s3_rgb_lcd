@@ -88,8 +88,7 @@ static void scale1_indic3_anim_cb(void *var, int32_t v)
 void example_lvgl_demo_ui(lv_display_t *disp)
 {
     // init default theme
-    lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK,
-                          font_normal);
+    lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK,font_normal);
     // bullet style
     lv_style_init(&style_bullet);
     lv_style_set_border_width(&style_bullet, 0);
