@@ -25,34 +25,6 @@
 #include "esp_io_expander.h"
 #include "esp_lcd_panel_io_additions.h"
 
-// #include "driver/i2c_master.h"
-
-// i2c_master_bus_config_t i2c_config={
-//     .clk_source=I2C_CLK_SRC_DEFAULT,
-//     .i2c_port=I2C_NUM_0,
-//     .sda_io_num=GPIO_NUM_21,
-//     .scl_io_num=GPIO_NUM_40,
-//     .glitch_ignore_cnt=7,
-//     .flags.enable_internal_pullup=true,
-// };
-// i2c_master_bus_handle_t i2c_handle;
-
-// i2c_device_config_t i2c_dev_config={
-//     .dev_addr_length=I2C_ADDR_BIT_7,
-//     .device_address=0x5D,
-//     .scl_speed_hz=10000,
-// };
-// i2c_master_dev_handle_t i2c_dev_handle;
-
-// void i2c_init(void){
-//     uint8_t reg=0x8140;
-//     uint8_t buf[2];
-//     uint8_t buffer[2];
-//     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_config,&i2c_handle));
-//     ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_handle,&i2c_dev_config,&i2c_dev_handle));
-//     ESP_ERROR_CHECK(i2c_master_probe(i2c_handle,0x5D,-1));
-
-// }
 Vernon_GT911 vernonGT911;
 #if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
 static void example_lvgl_touch_cb(lv_indev_t* indev,lv_indev_data_t* data){
@@ -70,24 +42,25 @@ static void example_lvgl_touch_cb(lv_indev_t* indev,lv_indev_data_t* data){
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
-extern void example_lvgl_demo_ui(lv_display_t *disp);
+extern void example_lvgl_demo_ui(lv_disp_t *disp_drv);
 
 static bool example_notify_lvgl_flush_ready(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx)
 {
-    lv_display_t *disp = (lv_display_t *)user_ctx;
-    lv_display_flush_ready(disp);
+    lv_disp_drv_t *disp_drv = (lv_disp_drv_t *)user_ctx;
+    lv_disp_flush_ready(disp_drv);
     return false;
 }
 
-static void example_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
+static void example_lvgl_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_map)
 {
-    esp_lcd_panel_handle_t panel_handle = lv_display_get_user_data(disp);
+    esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t)disp_drv->user_data;
     int offsetx1 = area->x1;
     int offsetx2 = area->x2;
     int offsety1 = area->y1;
     int offsety2 = area->y2;
     // pass the draw buffer to the driver
-    esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, px_map);
+    esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, color_map);
+    lv_disp_flush_ready(disp_drv);
 }
 
 static void example_increase_lvgl_tick(void *arg)
@@ -96,23 +69,6 @@ static void example_increase_lvgl_tick(void *arg)
     lv_tick_inc(EXAMPLE_LVGL_TICK_PERIOD_MS);
 }
 
-static void example_lvgl_port_task(void *arg)
-{
-    ESP_LOGI(TAG, "Starting LVGL task");
-    uint32_t time_till_next_ms = 0;
-    while (1) {
-        _lock_acquire(&lvgl_api_lock);
-        time_till_next_ms = lv_timer_handler();
-        _lock_release(&lvgl_api_lock);
-
-        // in case of task watch dog timeout, set the minimal delay to 10ms
-        if (time_till_next_ms < 10) {
-            time_till_next_ms = 10;
-        }
-
-        usleep(1000 * time_till_next_ms);
-    }
-}
 
 static void example_bsp_init_lcd_backlight(void)
 {
@@ -157,7 +113,7 @@ void app_main(void)
     GT911_setRotation(&vernonGT911,ROTATION_NORMAL);
     ESP_LOGW(TAG,"GT911 TouchPad Init");
 #endif
-    xTaskCreate(GT911_test,"i2c",1024*4,NULL,3,NULL);
+    // xTaskCreate(GT911_test,"i2c",1024*4,NULL,3,NULL);
 
     ESP_LOGI(TAG, "Turn off LCD backlight");
     example_bsp_init_lcd_backlight();
@@ -289,37 +245,34 @@ void app_main(void)
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_init();
     // create a lvgl display
-    lv_display_t *display = lv_display_create(EXAMPLE_LCD_H_RES, EXAMPLE_LCD_V_RES);
-    // associate the rgb panel handle to the display
-    lv_display_set_user_data(display, panel_handle);
-    // set color depth
-    lv_display_set_color_format(display, EXAMPLE_LV_COLOR_FORMAT);
-    // create draw buffers
-    void *buf1 = NULL;
-    void *buf2 = NULL;
-#if CONFIG_EXAMPLE_USE_DOUBLE_FB
-    ESP_LOGI(TAG, "Use frame buffers as LVGL draw buffers");
-    ESP_ERROR_CHECK(esp_lcd_rgb_panel_get_frame_buffer(panel_handle, 2, &buf1, &buf2));
-    // set LVGL draw buffers and direct mode
-    lv_display_set_buffers(display, buf1, buf2, EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES * EXAMPLE_PIXEL_SIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
-#else
-    ESP_LOGI(TAG, "Allocate LVGL draw buffers");
-    // it's recommended to allocate the draw buffer from internal memory, for better performance
-    size_t draw_buffer_sz = EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES/10 * EXAMPLE_PIXEL_SIZE;
-    buf1 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    void *buf1=NULL;
+    void *buf2=NULL;
+
+    lv_disp_draw_buf_t draw_buf;
+    ESP_LOGI(TAG, "Allocate separate LVGL draw buffers from PSRAM");
+    buf1=heap_caps_malloc(EXAMPLE_LCD_H_RES * 100 * sizeof(lv_color_t),MALLOC_CAP_SPIRAM);
     assert(buf1);
-    // set LVGL draw buffers and partial mode
-    lv_display_set_buffers(display, buf1, buf2, draw_buffer_sz, LV_DISPLAY_RENDER_MODE_PARTIAL);
-#endif // CONFIG_EXAMPLE_USE_DOUBLE_FB
+    buf2=heap_caps_malloc(EXAMPLE_LCD_H_RES * 100 * sizeof(lv_color_t),MALLOC_CAP_SPIRAM);
+    assert(buf2);
+    //initialize LVGL draw buffers
+    lv_disp_draw_buf_init(&draw_buf,buf1,buf2,EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES / 10 );
 
-    // set the callback which can copy the rendered image to an area of the display
-    lv_display_set_flush_cb(display, example_lvgl_flush_cb);
+    lv_disp_drv_t disp_drv;
+    lv_disp_drv_init(&disp_drv);
+    disp_drv.hor_res=EXAMPLE_LCD_H_RES;
+    disp_drv.ver_res=EXAMPLE_LCD_V_RES;
+    disp_drv.flush_cb=example_lvgl_flush_cb;
+    disp_drv.draw_buf=&draw_buf;
+    disp_drv.user_data=panel_handle;
+    
+    lv_disp_t *disp;
+    disp=lv_disp_drv_register(&disp_drv);
 
-    ESP_LOGI(TAG, "Register event callbacks");
-    esp_lcd_rgb_panel_event_callbacks_t cbs = {
-        .on_color_trans_done = example_notify_lvgl_flush_ready,
-    };
-    ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, display));
+    // ESP_LOGI(TAG, "Register event callbacks");
+    // esp_lcd_rgb_panel_event_callbacks_t cbs = {
+        // .on_color_trans_done = example_notify_lvgl_flush_ready,
+    // };
+    // ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, display));
 
     ESP_LOGI(TAG, "Install LVGL tick timer");
     // Tick interface for LVGL (using esp_timer to generate 2ms periodic event)
@@ -332,18 +285,22 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
 #if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
-    static lv_indev_t* touch_indev;
-    touch_indev=lv_indev_create();
-    lv_indev_set_type(touch_indev,LV_INDEV_TYPE_POINTER);
-    lv_indev_set_display(touch_indev,display);
-    lv_indev_set_read_cb(touch_indev,example_lvgl_touch_cb);
+    static lv_indev_drv_t indev_drv;
+    lv_indev_drv_init(&indev_drv);
+    indev_drv.type=LV_INDEV_TYPE_POINTER;
+    indev_drv.disp=disp;
+    indev_drv.read_cb=example_lvgl_touch_cb;
+
+    lv_indev_drv_register(&indev_drv);
 #endif
-    ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
 
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
     _lock_acquire(&lvgl_api_lock);
-    example_lvgl_demo_ui(display);
+    example_lvgl_demo_ui(disp);
     _lock_release(&lvgl_api_lock);
+    while(1){
+        vTaskDelay(pdMS_TO_TICKS(10));
+        lv_timer_handler();
+    }
 }

@@ -65,7 +65,7 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              640
 #define EXAMPLE_LCD_V_RES              480
-#define EXAMPLE_LCD_HSYNC              23
+#define EXAMPLE_LCD_HSYNC              22
 #define EXAMPLE_LCD_HBP                20
 #define EXAMPLE_LCD_HFP                20
 #define EXAMPLE_LCD_VSYNC              2
