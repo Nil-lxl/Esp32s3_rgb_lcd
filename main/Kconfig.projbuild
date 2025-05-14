@@ -51,12 +51,13 @@ menu "Example Configuration"
         
         config EXAMPLE_LCD_CONTROLLER_NV3052C
             bool "nv3052c"
-        config EXAMPLE_LCD_CONTROLLER_ST7701S
-            bool "st7701s"
-        config EXAMPLE_LCD_H040A18
-            bool "H040A18"
+        config EXAMPLE_LCD_H030A10
+            bool "H030A10"
         config EXAMPLE_LCD_H035A17
             bool "H035A17"    
+        config EXAMPLE_LCD_H040A18
+            bool "H040A18"
+
     endchoice
 
     config EXAMPLE_LCD_USE_TOUCH_ENABLED

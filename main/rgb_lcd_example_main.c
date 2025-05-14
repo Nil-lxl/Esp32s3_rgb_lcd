@@ -148,7 +148,7 @@ void GT911_test(void *param){
 
 void app_main(void)
 {
-    xTaskCreate(GT911_test,"i2c",1024*4,NULL,3,NULL);
+    // xTaskCreate(GT911_test,"i2c",1024*4,NULL,3,NULL);
 #if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
     GT911_init(&vernonGT911, TOUCH_I2C_SDA,TOUCH_I2C_SCL,TOUCH_PIN_INT,
                TOUCH_PIN_RTN, I2C_NUM_0,GT911_ADDR1,
@@ -171,10 +171,10 @@ void app_main(void)
         .sda_gpio_num=PIN_NUM_SDA,
         .io_expander=NULL,
     };
-#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
-    esp_lcd_panel_io_3wire_spi_config_t io_config=ST7701_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
-#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
-    esp_lcd_panel_io_3wire_spi_config_t io_config=NV3052_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+esp_lcd_panel_io_3wire_spi_config_t io_config=NV3052_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
+#elif CONFIG_EXAMPLE_LCD_H030A10
+    esp_lcd_panel_io_3wire_spi_config_t io_config=H030A10_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
 #elif CONFIG_EXAMPLE_LCD_H040A18
     esp_lcd_panel_io_3wire_spi_config_t io_config=H040A18_PANEL_IO_3WIRE_SPI_CONFIG(line_config,0);
 #elif CONFIG_EXAMPLE_LCD_H035A17
@@ -243,10 +243,10 @@ void app_main(void)
         .flags.fb_in_psram = true, // allocate frame buffer in PSRAM
     };
     
-#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
-    st7701_vendor_config_t vendor_config={
-#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
     nv3052_vendor_config_t vendor_config={
+#elif CONFIG_EXAMPLE_LCD_H030A10
+    h030a10_vendor_config_t vendor_config={
 #elif CONFIG_EXAMPLE_LCD_H040A18
     h040a18_vendor_config_t vendor_config={
 #elif CONFIG_EXAMPLE_LCD_H035A17  
@@ -266,10 +266,10 @@ void app_main(void)
         .vendor_config=&vendor_config,
     };
 
-#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
-    ESP_ERROR_CHECK(esp_lcd_new_panel_st7701_rgb(io_handle,&panel_dev_config,&panel_handle));
-#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
     ESP_ERROR_CHECK(esp_lcd_new_panel_nv3052_rgb(io_handle,&panel_dev_config,&panel_handle));
+#elif CONFIG_EXAMPLE_LCD_H030A10
+    ESP_ERROR_CHECK(esp_lcd_new_panel_h030a10(io_handle,&panel_dev_config,&panel_handle));
 #elif CONFIG_EXAMPLE_LCD_H040A18
     ESP_ERROR_CHECK(esp_lcd_new_panel_h040a18(io_handle,&panel_dev_config,&panel_handle));
 #elif CONFIG_EXAMPLE_LCD_H035A17

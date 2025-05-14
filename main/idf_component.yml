@@ -1,4 +1,3 @@
 dependencies:
-  espressif/esp_lcd_st7701: ^1.1.1
   esp_lcd_panel_io_additions: "1.0.0"
   # esp_lcd_touch_gt911: ^1.1.1

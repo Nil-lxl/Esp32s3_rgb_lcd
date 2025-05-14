@@ -5,10 +5,10 @@
 extern "C"{
 #endif
 
-#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
-#include "esp_lcd_st7701.h"
-#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
 #include "esp_lcd_nv3052c.h"
+#elif CONFIG_EXAMPLE_LCD_H030A10
+#include "lcd_h030a10.h"
 #elif CONFIG_EXAMPLE_LCD_H040A18
 #include "lcd_h040a18.h"
 #elif CONFIG_EXAMPLE_LCD_H035A17
@@ -31,17 +31,7 @@ static const char *TAG = "example";
 #define TOUCH_PAD_WIDTH  640
 #define TOUCH_PAD_HEIGHT 480
 #endif
-#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_ST7701S
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
-#define EXAMPLE_LCD_H_RES              480
-#define EXAMPLE_LCD_V_RES              854
-#define EXAMPLE_LCD_HSYNC              80
-#define EXAMPLE_LCD_HBP                40
-#define EXAMPLE_LCD_HFP                40
-#define EXAMPLE_LCD_VSYNC              4
-#define EXAMPLE_LCD_VBP                20
-#define EXAMPLE_LCD_VFP                20
-#elif CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
+#ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (15 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              720
 #define EXAMPLE_LCD_V_RES              720
@@ -51,8 +41,19 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_VSYNC              5
 #define EXAMPLE_LCD_VBP                15
 #define EXAMPLE_LCD_VFP                16
+#elif CONFIG_EXAMPLE_LCD_H030A10
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (19 * 1000 * 1000)
+#define EXAMPLE_LCD_H_RES              480
+#define EXAMPLE_LCD_V_RES              854
+#define EXAMPLE_LCD_HSYNC              80
+#define EXAMPLE_LCD_HBP                40
+#define EXAMPLE_LCD_HFP                40
+#define EXAMPLE_LCD_VSYNC              4
+#define EXAMPLE_LCD_VBP                20
+#define EXAMPLE_LCD_VFP                20
+
 #elif CONFIG_EXAMPLE_LCD_H040A18
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (19 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              400
 #define EXAMPLE_LCD_V_RES              960
 #define EXAMPLE_LCD_HSYNC              8
@@ -65,7 +66,7 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              640
 #define EXAMPLE_LCD_V_RES              480
-#define EXAMPLE_LCD_HSYNC              23
+#define EXAMPLE_LCD_HSYNC              2
 #define EXAMPLE_LCD_HBP                20
 #define EXAMPLE_LCD_HFP                20
 #define EXAMPLE_LCD_VSYNC              2
@@ -83,8 +84,8 @@ static const char *TAG = "example";
 #define PIN_NUM_CS      10
 #define PIN_NUM_RST     9
 
-#define EXAMPLE_PIN_NUM_HSYNC          45
-#define EXAMPLE_PIN_NUM_VSYNC          48
+#define EXAMPLE_PIN_NUM_HSYNC          48
+#define EXAMPLE_PIN_NUM_VSYNC          45
 #define EXAMPLE_PIN_NUM_DE             47
 #define EXAMPLE_PIN_NUM_PCLK           46
 
