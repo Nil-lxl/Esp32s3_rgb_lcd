@@ -305,7 +305,7 @@ static const h035a17_lcd_init_cmd_t rgb_lcd_init_cmds [] = {
     {0xFF, (uint8_t []){0x52}, 1, 0},
     {0xFF, (uint8_t []){0x00}, 1, 0},
     {0x3A, (uint8_t []){0x55}, 1, 0},//RGB 565 format
-    {0x36, (uint8_t []){0x0a}, 1, 0},
+    {0x36, (uint8_t []){0x06}, 1, 0},
 
     {0x11, (uint8_t []){0x00}, 0, 200},
 

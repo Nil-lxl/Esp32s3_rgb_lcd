@@ -5,6 +5,7 @@
  */
 
 #include "lvgl.h"
+#include "demos/lv_demos.h"
 #include "lcd_defines.h"
 static lv_style_t style_bullet;
 static lv_obj_t *scale1;
@@ -87,70 +88,71 @@ static void scale1_indic3_anim_cb(void *var, int32_t v)
 
 void example_lvgl_demo_ui(lv_display_t *disp)
 {
+    lv_demo_widgets();
     // init default theme
-    lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK,
-                          font_normal);
-    // bullet style
-    lv_style_init(&style_bullet);
-    lv_style_set_border_width(&style_bullet, 0);
-    lv_style_set_radius(&style_bullet, LV_RADIUS_CIRCLE);
+    // lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK,
+    //                       font_normal);
+    // // bullet style
+    // lv_style_init(&style_bullet);
+    // lv_style_set_border_width(&style_bullet, 0);
+    // lv_style_set_radius(&style_bullet, LV_RADIUS_CIRCLE);
 
-    lv_obj_t *parent = lv_display_get_screen_active(disp);
+    // lv_obj_t *parent = lv_display_get_screen_active(disp);
 
-    // create scale widget
-    scale1 = create_scale_box(parent, "Revenue", "Sales", "Costs");
+    // // create scale widget
+    // scale1 = create_scale_box(parent, "Revenue", "Sales", "Costs");
 
-    // create arc indicators
-    lv_obj_t *arc;
-    arc = lv_arc_create(scale1);
-    lv_obj_remove_style(arc, NULL, LV_PART_KNOB);
-    lv_obj_remove_style(arc, NULL, LV_PART_MAIN);
-    lv_obj_set_size(arc, lv_pct(100), lv_pct(100));
-    lv_obj_set_style_arc_opa(arc, 0, 0);
-    lv_obj_set_style_arc_width(arc, 15, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_color(arc, lv_palette_main(LV_PALETTE_BLUE), LV_PART_INDICATOR);
-    lv_obj_remove_flag(arc, LV_OBJ_FLAG_CLICKABLE);
+    // // create arc indicators
+    // lv_obj_t *arc;
+    // arc = lv_arc_create(scale1);
+    // lv_obj_remove_style(arc, NULL, LV_PART_KNOB);
+    // lv_obj_remove_style(arc, NULL, LV_PART_MAIN);
+    // lv_obj_set_size(arc, lv_pct(100), lv_pct(100));
+    // lv_obj_set_style_arc_opa(arc, 0, 0);
+    // lv_obj_set_style_arc_width(arc, 15, LV_PART_INDICATOR);
+    // lv_obj_set_style_arc_color(arc, lv_palette_main(LV_PALETTE_BLUE), LV_PART_INDICATOR);
+    // lv_obj_remove_flag(arc, LV_OBJ_FLAG_CLICKABLE);
 
-    // animation
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_values(&a, 20, 100);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_set_exec_cb(&a, scale1_indic1_anim_cb);
-    lv_anim_set_var(&a, arc);
-    lv_anim_set_duration(&a, 4100);
-    lv_anim_set_playback_duration(&a, 2700);
-    lv_anim_start(&a);
+    // // animation
+    // lv_anim_t a;
+    // lv_anim_init(&a);
+    // lv_anim_set_values(&a, 20, 100);
+    // lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    // lv_anim_set_exec_cb(&a, scale1_indic1_anim_cb);
+    // lv_anim_set_var(&a, arc);
+    // lv_anim_set_duration(&a, 4100);
+    // lv_anim_set_playback_duration(&a, 2700);
+    // lv_anim_start(&a);
 
-    arc = lv_arc_create(scale1);
-    lv_obj_remove_style(arc, NULL, LV_PART_KNOB);
-    lv_obj_set_size(arc, lv_pct(100), lv_pct(100));
-    lv_obj_set_style_margin_all(arc, 20, 0);
-    lv_obj_set_style_arc_opa(arc, 0, 0);
-    lv_obj_set_style_arc_width(arc, 15, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_color(arc, lv_palette_main(LV_PALETTE_RED), LV_PART_INDICATOR);
-    lv_obj_remove_flag(arc, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_center(arc);
+    // arc = lv_arc_create(scale1);
+    // lv_obj_remove_style(arc, NULL, LV_PART_KNOB);
+    // lv_obj_set_size(arc, lv_pct(100), lv_pct(100));
+    // lv_obj_set_style_margin_all(arc, 20, 0);
+    // lv_obj_set_style_arc_opa(arc, 0, 0);
+    // lv_obj_set_style_arc_width(arc, 15, LV_PART_INDICATOR);
+    // lv_obj_set_style_arc_color(arc, lv_palette_main(LV_PALETTE_RED), LV_PART_INDICATOR);
+    // lv_obj_remove_flag(arc, LV_OBJ_FLAG_CLICKABLE);
+    // lv_obj_center(arc);
 
-    lv_anim_set_exec_cb(&a, scale1_indic2_anim_cb);
-    lv_anim_set_var(&a, arc);
-    lv_anim_set_duration(&a, 2600);
-    lv_anim_set_playback_duration(&a, 3200);
-    lv_anim_start(&a);
+    // lv_anim_set_exec_cb(&a, scale1_indic2_anim_cb);
+    // lv_anim_set_var(&a, arc);
+    // lv_anim_set_duration(&a, 2600);
+    // lv_anim_set_playback_duration(&a, 3200);
+    // lv_anim_start(&a);
 
-    arc = lv_arc_create(scale1);
-    lv_obj_remove_style(arc, NULL, LV_PART_KNOB);
-    lv_obj_set_size(arc, lv_pct(100), lv_pct(100));
-    lv_obj_set_style_margin_all(arc, 40, 0);
-    lv_obj_set_style_arc_opa(arc, 0, 0);
-    lv_obj_set_style_arc_width(arc, 15, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_color(arc, lv_palette_main(LV_PALETTE_GREEN), LV_PART_INDICATOR);
-    lv_obj_remove_flag(arc, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_center(arc);
+    // arc = lv_arc_create(scale1);
+    // lv_obj_remove_style(arc, NULL, LV_PART_KNOB);
+    // lv_obj_set_size(arc, lv_pct(100), lv_pct(100));
+    // lv_obj_set_style_margin_all(arc, 40, 0);
+    // lv_obj_set_style_arc_opa(arc, 0, 0);
+    // lv_obj_set_style_arc_width(arc, 15, LV_PART_INDICATOR);
+    // lv_obj_set_style_arc_color(arc, lv_palette_main(LV_PALETTE_GREEN), LV_PART_INDICATOR);
+    // lv_obj_remove_flag(arc, LV_OBJ_FLAG_CLICKABLE);
+    // lv_obj_center(arc);
 
-    lv_anim_set_exec_cb(&a, scale1_indic3_anim_cb);
-    lv_anim_set_var(&a, arc);
-    lv_anim_set_duration(&a, 2800);
-    lv_anim_set_playback_duration(&a, 1800);
-    lv_anim_start(&a);
+    // lv_anim_set_exec_cb(&a, scale1_indic3_anim_cb);
+    // lv_anim_set_var(&a, arc);
+    // lv_anim_set_duration(&a, 2800);
+    // lv_anim_set_playback_duration(&a, 1800);
+    // lv_anim_start(&a);
 }

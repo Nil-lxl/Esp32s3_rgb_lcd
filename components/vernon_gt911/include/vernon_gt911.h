@@ -7,7 +7,8 @@ extern "C"{
 //
 // Created by taxue on 2023/1/19.
 //
-#include "driver/i2c.h"
+#include "freertos/FreeRTOS.h"
+#include "driver/i2c_master.h"
 #include "string.h"
 #include "esp_log.h"
 
@@ -152,9 +153,10 @@ typedef struct {
 
 /**类结构体**/
 typedef struct {
-    i2c_config_t gt911_i2c_config;
-    i2c_port_t i2c_num;
-    uint8_t gt911_addr;
+    i2c_master_bus_config_t gt911_bus_config;
+    i2c_master_bus_handle_t gt911_bus_handle;
+    i2c_device_config_t gt911_dev_config;
+    i2c_master_dev_handle_t gt911_dev_handle;
     uint16_t height;
     uint16_t width;
     uint8_t rotation;

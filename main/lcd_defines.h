@@ -63,15 +63,15 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_VBP                20
 #define EXAMPLE_LCD_VFP                20
 #elif CONFIG_EXAMPLE_LCD_H035A17
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (18 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              640
 #define EXAMPLE_LCD_V_RES              480
 #define EXAMPLE_LCD_HSYNC              2
 #define EXAMPLE_LCD_HBP                20
-#define EXAMPLE_LCD_HFP                20
+#define EXAMPLE_LCD_HFP                40
 #define EXAMPLE_LCD_VSYNC              2
 #define EXAMPLE_LCD_VBP                6
-#define EXAMPLE_LCD_VFP                12
+#define EXAMPLE_LCD_VFP                20
 #endif
 
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
@@ -141,7 +141,7 @@ static const char *TAG = "example";
 
 #define EXAMPLE_LVGL_DRAW_BUF_LINES    50 // number of display lines in each draw buffer
 #define EXAMPLE_LVGL_TICK_PERIOD_MS    2
-#define EXAMPLE_LVGL_TASK_STACK_SIZE   (5 * 1024)
+#define EXAMPLE_LVGL_TASK_STACK_SIZE   (8 * 1024)
 #define EXAMPLE_LVGL_TASK_PRIORITY     2
 
 #ifdef __cplusplus

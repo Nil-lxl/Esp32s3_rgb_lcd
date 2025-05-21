@@ -61,7 +61,8 @@
         "esp_lcd_panel_ops.h": "c",
         "freertos.h": "c",
         "esp_lcd_panel_interface.h": "c",
-        "lcd_h030a10.h": "c"
+        "lcd_h030a10.h": "c",
+        "lv_demos.h": "c"
     },
     "idf.flashType": "UART"
 }
