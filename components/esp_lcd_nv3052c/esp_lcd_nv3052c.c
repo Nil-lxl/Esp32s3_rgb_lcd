@@ -300,7 +300,7 @@ static const nv3052_lcd_init_cmd_t rgb_lcd_init_cmds[] = {
     {0xFF, (uint8_t []){0x52}, 1, 0},
     {0xFF, (uint8_t []){0x00}, 1, 0},
     {0x36, (uint8_t []){0x02}, 1, 0},//反扫09
-    {0x3A, (uint8_t []){0x77}, 1, 0},//16BIT
+    {0x3A, (uint8_t []){0x55}, 1, 0},//16BIT
     {0x11, (uint8_t []){0x00}, 1, 200},
     {0x29, (uint8_t []){0x00}, 1, 100},
 };
@@ -329,7 +329,7 @@ static esp_err_t panel_nv3052_send_init_cmds(nv3052_panel_t *nv3052)
                             TAG, "send command failed");
         vTaskDelay(pdMS_TO_TICKS(init_cmds[i].delay_ms));
 
-        ESP_LOGW(TAG,"send commands %d/%d",i,init_cmds_size);
+        // ESP_LOGW(TAG,"send commands %d/%d",i,init_cmds_size);
     }
     ESP_LOGI(TAG, "send init commands success");
 

@@ -20,52 +20,68 @@
 #include "esp_log.h"
 
 #include "lvgl.h"
-#include "lcd_defines.h"
+#include "lcd_config.h"
 #include "esp_io_expander.h"
 #include "esp_lcd_panel_io_additions.h"
+#include "esp_lcd_touch.h"
+#include "esp_lcd_touch_gt911.h"
 
-// #include "driver/i2c_master.h"
+static i2c_master_bus_handle_t i2c_bus_handle;
+static esp_lcd_touch_handle_t touch_handle;
+static esp_lcd_panel_io_handle_t touch_io_handle;
+void i2c_bus_init(){
+    
+    i2c_master_bus_config_t i2c_bus_cfg={
+        .clk_source=I2C_CLK_SRC_DEFAULT,
+        .sda_io_num=TOUCH_I2C_SDA,
+        .scl_io_num=TOUCH_I2C_SCL,
+        .i2c_port=I2C_NUM_0,
+        .glitch_ignore_cnt=7,
+        .flags.enable_internal_pullup=true,
+    };
+    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_bus_cfg,&i2c_bus_handle));
+}
+void touch_init(){
+    i2c_bus_init();
+    const esp_lcd_touch_config_t touch_config={
+        .x_max=EXAMPLE_LCD_H_RES,
+        .y_max=EXAMPLE_LCD_V_RES,
+        .rst_gpio_num=-1,
+        .int_gpio_num=-1,
+        .levels = {
+            .reset = 0,
+            .interrupt = 0,
+        },
+        .flags = {
+            .swap_xy = 0,
+        },
+    };
+    esp_lcd_panel_io_i2c_config_t touch_io_cfg=ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
+    touch_io_cfg.scl_speed_hz=400000;
 
-// i2c_master_bus_config_t i2c_config={
-//     .clk_source=I2C_CLK_SRC_DEFAULT,
-//     .i2c_port=I2C_NUM_0,
-//     .sda_io_num=GPIO_NUM_21,
-//     .scl_io_num=GPIO_NUM_40,
-//     .glitch_ignore_cnt=7,
-//     .flags.enable_internal_pullup=true,
-// };
-// i2c_master_bus_handle_t i2c_handle;
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c_v2(i2c_bus_handle,&touch_io_cfg,&touch_io_handle));
+    ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_gt911(touch_io_handle,&touch_config,&touch_handle));
 
-// i2c_device_config_t i2c_dev_config={
-//     .dev_addr_length=I2C_ADDR_BIT_7,
-//     .device_address=0x5D,
-//     .scl_speed_hz=10000,
-// };
-// i2c_master_dev_handle_t i2c_dev_handle;
+}
 
-// void i2c_init(void){
-//     uint8_t reg=0x8140;
-//     uint8_t buf[2];
-//     uint8_t buffer[2];
-//     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_config,&i2c_handle));
-//     ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_handle,&i2c_dev_config,&i2c_dev_handle));
-//     ESP_ERROR_CHECK(i2c_master_probe(i2c_handle,0x5D,-1));
-
-// }
-Vernon_GT911 vernonGT911;
-#if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
 static void example_lvgl_touch_cb(lv_indev_t* indev,lv_indev_data_t* data){
-    uint16_t x,y;
-    if(GT911_touched(&vernonGT911)){
-        GT911_read_pos(&vernonGT911,&x,&y,0);
-        data->point.x=x;
-        data->point.y=y;
-        data->state=LV_INDEV_STATE_PRESSED;
-    }else{
-        data->state=LV_INDEV_STATE_RELEASED;
+    uint16_t touchpad_x[1] = {0};
+    uint16_t touchpad_y[1] = {0};
+    uint8_t touchpad_cnt = 0;
+    esp_lcd_touch_read_data(touch_handle);
+
+    bool touch_pressed=esp_lcd_touch_get_coordinates(touch_handle,touchpad_x,touchpad_y,NULL,&touchpad_cnt,1);
+
+    if (touch_pressed && touchpad_cnt > 0) {
+        data->point.x = touchpad_x[0];
+        data->point.y = touchpad_y[0];
+        data->state = LV_INDEV_STATE_PRESSED;
+        ESP_LOGI(TAG,"%d,%d",touchpad_x[0],touchpad_y[0]);
+    } else {
+        data->state = LV_INDEV_STATE_RELEASED;
     }
 }
-#endif
+
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
@@ -131,31 +147,10 @@ static void example_bsp_set_lcd_backlight(uint32_t level)
 #endif
 }
 
-void GT911_test(void *param){
-    uint16_t x,y;
-    while (1){
-        if(GT911_touched(&vernonGT911)){
-            //
-            // for(int i=0;i<5;i++){
-                GT911_read_pos(&vernonGT911,&x,&y,0);
-                ESP_LOGW(TAG,"No: %d, touched x: %d, touched y: %d\n", 0,  x, y);
-            // }
-        }
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    }
-
-}
-
 void app_main(void)
 {
-    // xTaskCreate(GT911_test,"i2c",1024*4,NULL,3,NULL);
 #if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
-    GT911_init(&vernonGT911, TOUCH_I2C_SDA,TOUCH_I2C_SCL,TOUCH_PIN_INT,
-               TOUCH_PIN_RTN, I2C_NUM_0,GT911_ADDR1,
-               TOUCH_PAD_WIDTH, TOUCH_PAD_HEIGHT);
-
-    GT911_setRotation(&vernonGT911,ROTATION_NORMAL);
-    ESP_LOGW(TAG,"GT911 TouchPad Init");
+    touch_init();
 #endif
     ESP_LOGI(TAG, "Turn off LCD backlight");
     example_bsp_init_lcd_backlight();
@@ -189,9 +184,6 @@ esp_lcd_panel_io_3wire_spi_config_t io_config=NV3052_PANEL_IO_3WIRE_SPI_CONFIG(l
         .data_width = EXAMPLE_DATA_BUS_WIDTH,
         .dma_burst_size = 64,
         .num_fbs = EXAMPLE_LCD_NUM_FB,
-#if CONFIG_EXAMPLE_USE_BOUNCE_BUFFER
-        .bounce_buffer_size_px = 20 * EXAMPLE_LCD_H_RES,
-#endif
         .clk_src = LCD_CLK_SRC_DEFAULT,
         .disp_gpio_num = EXAMPLE_PIN_NUM_DISP_EN,
         .pclk_gpio_num = EXAMPLE_PIN_NUM_PCLK,
@@ -215,16 +207,6 @@ esp_lcd_panel_io_3wire_spi_config_t io_config=NV3052_PANEL_IO_3WIRE_SPI_CONFIG(l
             EXAMPLE_PIN_NUM_DATA13,
             EXAMPLE_PIN_NUM_DATA14,
             EXAMPLE_PIN_NUM_DATA15,
-#if CONFIG_EXAMPLE_LCD_DATA_LINES > 16
-            EXAMPLE_PIN_NUM_DATA16,
-            EXAMPLE_PIN_NUM_DATA17,
-            EXAMPLE_PIN_NUM_DATA18,
-            EXAMPLE_PIN_NUM_DATA19,
-            EXAMPLE_PIN_NUM_DATA20,
-            EXAMPLE_PIN_NUM_DATA21,
-            EXAMPLE_PIN_NUM_DATA22,
-            EXAMPLE_PIN_NUM_DATA23
-#endif
         },
         .timings = {
             .pclk_hz = EXAMPLE_LCD_PIXEL_CLOCK_HZ,

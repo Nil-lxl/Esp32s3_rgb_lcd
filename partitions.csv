@@ -1,0 +1,5 @@
+# ESP-IDF Partition Table
+# Name,    Type,    SubYype,    Offset,    Size,    Flags
+nvs,       data,    nvs,        0x11000,    24k,
+phy_init,  data,    phy,        0x17000,    4k,
+factory,   app,     factory,    0x20000,    2M,

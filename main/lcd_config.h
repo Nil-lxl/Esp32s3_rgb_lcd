@@ -27,12 +27,10 @@ static const char *TAG = "example";
 #define TOUCH_I2C_SCL   40
 #define TOUCH_PIN_RTN   38
 #define TOUCH_PIN_INT   39
-
-#define TOUCH_PAD_WIDTH  640
-#define TOUCH_PAD_HEIGHT 480
 #endif
+
 #ifdef CONFIG_EXAMPLE_LCD_CONTROLLER_NV3052C
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (15 * 1000 * 1000)
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (18 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              720
 #define EXAMPLE_LCD_V_RES              720
 #define EXAMPLE_LCD_HSYNC              2
@@ -41,6 +39,8 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_VSYNC              5
 #define EXAMPLE_LCD_VBP                15
 #define EXAMPLE_LCD_VFP                16
+#define TOUCH_PAD_WIDTH                720
+#define TOUCH_PAD_HEIGHT               720
 #elif CONFIG_EXAMPLE_LCD_H030A10
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (19 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              480
@@ -51,7 +51,6 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_VSYNC              4
 #define EXAMPLE_LCD_VBP                20
 #define EXAMPLE_LCD_VFP                20
-
 #elif CONFIG_EXAMPLE_LCD_H040A18
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (19 * 1000 * 1000)
 #define EXAMPLE_LCD_H_RES              400
@@ -68,10 +67,12 @@ static const char *TAG = "example";
 #define EXAMPLE_LCD_V_RES              480
 #define EXAMPLE_LCD_HSYNC              2
 #define EXAMPLE_LCD_HBP                20
-#define EXAMPLE_LCD_HFP                40
+#define EXAMPLE_LCD_HFP                20
 #define EXAMPLE_LCD_VSYNC              2
 #define EXAMPLE_LCD_VBP                6
 #define EXAMPLE_LCD_VFP                20
+#define TOUCH_PAD_WIDTH                640
+#define TOUCH_PAD_HEIGHT               480
 #endif
 
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
@@ -108,32 +109,11 @@ static const char *TAG = "example";
 #define EXAMPLE_PIN_NUM_DATA14         19   //R3
 #define EXAMPLE_PIN_NUM_DATA15         20   //R4
 
-#if CONFIG_EXAMPLE_LCD_DATA_LINES > 16
-#define EXAMPLE_PIN_NUM_DATA16         1   
-#define EXAMPLE_PIN_NUM_DATA17         2   
-#define EXAMPLE_PIN_NUM_DATA18         42
-#define EXAMPLE_PIN_NUM_DATA19         41
-#define EXAMPLE_PIN_NUM_DATA20         40
-#define EXAMPLE_PIN_NUM_DATA21         39
-#define EXAMPLE_PIN_NUM_DATA22         38
-#define EXAMPLE_PIN_NUM_DATA23         37
-#endif
-
-#if CONFIG_EXAMPLE_USE_DOUBLE_FB
 #define EXAMPLE_LCD_NUM_FB             2
-#else
-#define EXAMPLE_LCD_NUM_FB             1
-#endif // CONFIG_EXAMPLE_USE_DOUBLE_FB
 
-#if CONFIG_EXAMPLE_LCD_DATA_LINES_16
 #define EXAMPLE_DATA_BUS_WIDTH         16
 #define EXAMPLE_PIXEL_SIZE             2
 #define EXAMPLE_LV_COLOR_FORMAT        LV_COLOR_FORMAT_RGB565
-#elif CONFIG_EXAMPLE_LCD_DATA_LINES_24
-#define EXAMPLE_DATA_BUS_WIDTH         24
-#define EXAMPLE_PIXEL_SIZE             3
-#define EXAMPLE_LV_COLOR_FORMAT        LV_COLOR_FORMAT_RGB888
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your Application ///////////////////////////

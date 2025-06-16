@@ -1,48 +1,5 @@
 menu "Example Configuration"
-    choice EXAMPLE_LCD_BUFFER_MODE
-        prompt "RGB LCD Buffer Mode"
-        default EXAMPLE_USE_SINGLE_FB
-        help
-            Select the LCD buffer mode.
 
-        config EXAMPLE_USE_SINGLE_FB
-            bool "Use single frame buffer"
-            help
-                Allocate one frame buffer in the driver.
-                Allocate one draw buffer in LVGL.
-
-        config EXAMPLE_USE_DOUBLE_FB
-            bool "Use double frame buffer"
-            help
-                Allocate two frame buffers in the driver.
-                The frame buffers also work as ping-pong draw buffers in LVGL.
-
-        config EXAMPLE_USE_BOUNCE_BUFFER
-            bool "Use bounce buffer"
-            help
-                Allocate one frame buffer in the driver.
-                Allocate two bounce buffers in the driver.
-                Allocate one draw buffer in LVGL.
-    endchoice
-
-    choice EXAMPLE_LCD_DATA_LINES
-        prompt "RGB LCD Data Lines"
-        default EXAMPLE_LCD_DATA_LINES_16
-        help
-            Select the number of data lines of the RGB LCD.
-
-        config EXAMPLE_LCD_DATA_LINES_16
-            bool "16 data lines"
-
-        config EXAMPLE_LCD_DATA_LINES_24
-            bool "24 data lines"
-    endchoice
-
-    config EXAMPLE_LCD_DATA_LINES
-        int
-        default 16 if EXAMPLE_LCD_DATA_LINES_16
-        default 24 if EXAMPLE_LCD_DATA_LINES_24
-    
     choice EXAMPLE_RGB_PANEL_CONTROLLER
         prompt "RGB PANEL driver IC"
         default EXAMPLE_LCD_CONTROLLER_NV3052C

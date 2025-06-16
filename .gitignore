@@ -1,0 +1,15 @@
+/debug.log
+/dependencies.lock
+/sdkconfig.ci.double_fb
+/sdkconfig.ci.single_fb_no_bb
+/sdkconfig.ci.single_fb_with_bb
+/sdkconfig.defaults
+/sdkconfig.defaults.esp32p4
+/sdkconfig.defaults.esp32s3
+/sdkconfig.old
+/pytest_rgb_panel_lvgl.py
+/managed_components/
+/build/
+/.devcontainer/
+/.vscode/
+
