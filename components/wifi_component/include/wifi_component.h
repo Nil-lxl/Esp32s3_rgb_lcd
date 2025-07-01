@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "esp_wifi.h"
 #include "esp_log.h"
-#include "nvs_flash.h"
+
 
 #define WIFI_SCAN_LIST_NUM 10
 #define WIFI_SSID       "MI14"

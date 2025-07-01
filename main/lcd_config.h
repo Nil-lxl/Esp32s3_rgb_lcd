@@ -14,7 +14,6 @@ extern "C"{
 #elif CONFIG_EXAMPLE_LCD_H035A17
 #include "lcd_h035a17.h"
 #endif
-#include "vernon_gt911.h"
 
 static const char *TAG = "example";
 
@@ -75,9 +74,10 @@ static const char *TAG = "example";
 #define TOUCH_PAD_HEIGHT               480
 #endif
 
-#define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
-#define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL
-#define EXAMPLE_PIN_NUM_BK_LIGHT       -1
+#define EXAMPLE_LCD_BACKLIGHT_ON        1
+#define EXAMPLE_LCD_BACKLIGHT_OFF       0
+
+#define EXAMPLE_PIN_BACKLIGHT          -1
 #define EXAMPLE_PIN_NUM_DISP_EN        -1
 
 #define PIN_NUM_SDA     11
@@ -119,10 +119,6 @@ static const char *TAG = "example";
 //////////////////// Please update the following configuration according to your Application ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define EXAMPLE_LVGL_DRAW_BUF_LINES    50 // number of display lines in each draw buffer
-#define EXAMPLE_LVGL_TICK_PERIOD_MS    2
-#define EXAMPLE_LVGL_TASK_STACK_SIZE   (8 * 1024)
-#define EXAMPLE_LVGL_TASK_PRIORITY     2
 
 #ifdef __cplusplus
 }
