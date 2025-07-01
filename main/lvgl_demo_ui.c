@@ -258,7 +258,7 @@ void lv_wifi_scr() {
     lv_obj_add_event_cb(scan_btn, wifi_scan_cb, LV_EVENT_CLICKED, container);
 
 }
-void example_lvgl_demo_ui(lv_display_t *disp) {
+void lvgl_demo_ui() {
     lv_wifi_scr();
 
     // lv_demo_widgets();

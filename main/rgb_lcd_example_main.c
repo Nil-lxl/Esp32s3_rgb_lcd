@@ -21,13 +21,16 @@
 #include "driver/i2c_master.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_check.h"
 
 #include "lvgl.h"
+#include "demos/lv_demos.h"
 #include "lcd_config.h"
 #include "esp_io_expander.h"
 #include "esp_lcd_panel_io_additions.h"
 #include "esp_lcd_touch.h"
 #include "esp_lcd_touch_gt911.h"
+#include "esp_lvgl_port.h"
 
 static i2c_master_bus_handle_t i2c_bus_handle;
 static esp_lcd_touch_handle_t touch_handle;
@@ -68,66 +71,10 @@ static esp_err_t lcd_touch_init() {
 }
 #endif
 
-static void example_lvgl_touch_cb(lv_indev_t *indev, lv_indev_data_t *data) {
-    uint16_t touchpad_x[1] = { 0 };
-    uint16_t touchpad_y[1] = { 0 };
-    uint8_t touchpad_cnt = 0;
-    esp_lcd_touch_read_data(touch_handle);
-
-    bool touch_pressed = esp_lcd_touch_get_coordinates(touch_handle, touchpad_x, touchpad_y, NULL, &touchpad_cnt, 1);
-
-    if (touch_pressed && touchpad_cnt > 0) {
-        data->point.x = touchpad_x[0];
-        data->point.y = touchpad_y[0];
-        data->state = LV_INDEV_STATE_PRESSED;
-        // ESP_LOGI(TAG,"%d,%d",touchpad_x[0],touchpad_y[0]);
-    } else {
-        data->state = LV_INDEV_STATE_RELEASED;
-    }
-}
-
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
-extern void example_lvgl_demo_ui(lv_display_t *disp);
-
-static bool example_notify_lvgl_flush_ready(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx) {
-    lv_display_t *disp = (lv_display_t *)user_ctx;
-    lv_display_flush_ready(disp);
-    return false;
-}
-
-static void example_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
-    esp_lcd_panel_handle_t panel_handle = lv_display_get_user_data(disp);
-    int offsetx1 = area->x1;
-    int offsetx2 = area->x2;
-    int offsety1 = area->y1;
-    int offsety2 = area->y2;
-    // pass the draw buffer to the driver
-    esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, px_map);
-}
-
-static void example_increase_lvgl_tick(void *arg) {
-    /* Tell LVGL how many milliseconds has elapsed */
-    lv_tick_inc(2);
-}
-
-static void example_lvgl_port_task(void *arg) {
-    ESP_LOGI(TAG, "Starting LVGL task");
-    uint32_t time_till_next_ms = 0;
-    while (1) {
-        _lock_acquire(&lvgl_api_lock);
-        time_till_next_ms = lv_timer_handler();
-        _lock_release(&lvgl_api_lock);
-
-        // in case of task watch dog timeout, set the minimal delay to 10ms
-        if (time_till_next_ms < 10) {
-            time_till_next_ms = 10;
-        }
-
-        usleep(1000 * time_till_next_ms);
-    }
-}
+extern void lvgl_demo_ui();
 
 static void lcd_backlight_init(void) {
 #if EXAMPLE_PIN_BACKLIGHT >= 0
@@ -260,59 +207,56 @@ static esp_err_t lcd_init(void) {
 }
 
 static lv_display_t *display;
+static lv_indev_t *lvgl_touch_indev = NULL;
 static esp_err_t lvgl_init(void) {
-ESP_LOGI(TAG, "Initialize LVGL library");
-    lv_init();
-    // create a lvgl display
-    display = lv_display_create(EXAMPLE_LCD_H_RES, EXAMPLE_LCD_V_RES);
-    // associate the rgb panel handle to the display
-    lv_display_set_user_data(display, panel_handle);
-    // set color depth
-    lv_display_set_color_format(display, EXAMPLE_LV_COLOR_FORMAT);
-    // create draw buffers
-    void *buf1 = NULL;
-    void *buf2 = NULL;
-
-    ESP_LOGI(TAG, "Allocate LVGL draw buffers");
-    // it's recommended to allocate the draw buffer from internal memory, for better performance
-    size_t draw_buffer_sz = EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES * EXAMPLE_PIXEL_SIZE * 2;
-    buf1 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_SPIRAM);
-    assert(buf1);
-    buf2 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_SPIRAM);
-    assert(buf2);
-    // set LVGL draw buffers and partial mode
-    lv_display_set_buffers(display, buf1, buf2, draw_buffer_sz, LV_DISPLAY_RENDER_MODE_PARTIAL);
-
-    // set the callback which can copy the rendered image to an area of the display
-    lv_display_set_flush_cb(display, example_lvgl_flush_cb);
-
-    ESP_LOGI(TAG, "Register event callbacks");
-    esp_lcd_rgb_panel_event_callbacks_t cbs = {
-        .on_color_trans_done = example_notify_lvgl_flush_ready,
+    const lvgl_port_cfg_t lvgl_cfg = {
+        .task_priority = 4,
+        .task_stack = 8 * 1024,
+        .task_affinity = -1,
+        .task_max_sleep_ms = 500,
+        .timer_period_ms = 5,
     };
-    ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, display));
 
-    ESP_LOGI(TAG, "Install LVGL tick timer");
-    // Tick interface for LVGL (using esp_timer to generate 2ms periodic event)
-    const esp_timer_create_args_t lvgl_tick_timer_args = {
-        .callback = &example_increase_lvgl_tick,
-        .name = "lvgl_tick"
+    ESP_RETURN_ON_ERROR(lvgl_port_init(&lvgl_cfg), TAG, "LVGL port initialization failed");
+    uint32_t buf_size = EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES * 2;
+
+    const lvgl_port_display_cfg_t disp_cfg = {
+        .panel_handle = panel_handle,
+        .buffer_size = buf_size,
+        .double_buffer = 0,
+        .hres = EXAMPLE_LCD_H_RES,
+        .vres = EXAMPLE_LCD_V_RES,
+        .monochrome = false,
+        .color_format = LV_COLOR_FORMAT_RGB565,
+        .rotation = {
+            .swap_xy = false,
+            .mirror_x = false,
+            .mirror_y = false,
+        },
+        .flags = {
+            .buff_dma = false,
+            .buff_spiram = false,
+            .direct_mode=true,
+            // .full_refresh=true,
+            .swap_bytes = false,
+        },
     };
-    esp_timer_handle_t lvgl_tick_timer = NULL;
-    ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 2 * 1000));
+    const lvgl_port_display_rgb_cfg_t rgb_cfg={
+        .flags={
+            .bb_mode=false,
+            .avoid_tearing=true,
+        }
+    };
+    display=lvgl_port_add_disp_rgb(&disp_cfg,&rgb_cfg);
 
-#if CONFIG_EXAMPLE_LCD_USE_TOUCH_ENABLED
-    static lv_indev_t *touch_indev;
-    touch_indev = lv_indev_create();
-    lv_indev_set_type(touch_indev,LV_INDEV_TYPE_POINTER);
-    lv_indev_set_display(touch_indev,display);
-    lv_indev_set_read_cb(touch_indev,example_lvgl_touch_cb);
-#endif
-
+    const lvgl_port_touch_cfg_t touch_cfg = {
+        .disp = display,
+        .handle = touch_handle,
+    };
+    lvgl_touch_indev = lvgl_port_add_touch(&touch_cfg);
+    
     return ESP_OK;
 }
-
 
 void app_main(void) {
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -325,13 +269,10 @@ void app_main(void) {
     ESP_ERROR_CHECK(lcd_init());
     ESP_ERROR_CHECK(lvgl_init());
 
-    xTaskCreate(example_lvgl_port_task, "LVGL", 12 * 1024, NULL, 5, NULL);
 
-    ESP_LOGI(TAG, "Display LVGL UI");
-    // Lock the mutex due to the LVGL APIs are not thread-safe
-    _lock_acquire(&lvgl_api_lock);
-    example_lvgl_demo_ui(display);
-    _lock_release(&lvgl_api_lock);
+    lvgl_port_lock(0);
+    lvgl_demo_ui();
+    lvgl_port_unlock();
 
     //Turn On Lcd Backlight
     lcd_set_backlight(EXAMPLE_LCD_BACKLIGHT_ON);
